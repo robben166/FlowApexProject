@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <actionCalls>
+        <name>Notify_User</name>
+        <label>Notify User</label>
+        <locationX>446</locationX>
+        <locationY>866</locationY>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>$User.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <stringValue>Purge Covid 19 Symptoms Survey</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <elementReference>EmailBody</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>sendRichBody</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+    </actionCalls>
+    <apiVersion>60.0</apiVersion>
+    <decisions>
+        <name>Have_the_user_experience_enough_Symptoms</name>
+        <label>Have the user experience enough Symptoms</label>
+        <locationX>446</locationX>
+        <locationY>458</locationY>
+        <defaultConnector>
+            <targetReference>MessageB</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>More_than_3</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>NumberofSymptoms</leftValueReference>
+                <operator>GreaterThanOrEqualTo</operator>
+                <rightValue>
+                    <numberValue>3.0</numberValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>MessageA</targetReference>
+            </connector>
+            <label>More than 3</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>User_took_the_survey</name>
+        <label>User took the survey?</label>
+        <locationX>248</locationX>
+        <locationY>242</locationY>
+        <defaultConnector>
+            <targetReference>Info_Screen</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_User_Current_Covid_Log</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Survey_Already_taken</targetReference>
+            </connector>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <dynamicChoiceSets>
+        <name>SymptomList</name>
+        <dataType>Multipicklist</dataType>
+        <displayField xsi:nil="true"/>
+        <object xsi:nil="true"/>
+        <picklistField>Symptoms__c</picklistField>
+        <picklistObject>Covid_Symptom__c</picklistObject>
+    </dynamicChoiceSets>
+    <environments>Default</environments>
+    <formulas>
+        <name>DateTime</name>
+        <dataType>DateTime</dataType>
+        <expression>NOW()</expression>
+    </formulas>
+    <formulas>
+        <name>EndDate</name>
+        <dataType>Date</dataType>
+        <expression>{!Sysptoms_Start_Date} + 5</expression>
+    </formulas>
+    <formulas>
+        <name>NumberofSymptoms</name>
+        <dataType>Number</dataType>
+        <expression>IF(CONTAINS({!Symptoms}, &apos;Fever&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Dry cough&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Headache&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Tiredness&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Body Ache&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Runny Nose&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Diarhea&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Difficulty in breathing&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Loss of smell&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Loss of taste&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Severe respiratory infection&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;Pneumonia	&apos;), 1, 0)+
+IF(CONTAINS({!Symptoms}, &apos;No symptoms&apos;), 1, 0)</expression>
+        <scale>0</scale>
+    </formulas>
+    <formulas>
+        <name>Today</name>
+        <dataType>Date</dataType>
+        <expression>TODAY()</expression>
+    </formulas>
+    <interviewLabel>Purge COVID-19 Symptoms Survey - v1 {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Purge COVID-19 Symptoms Survey</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordCreates>
+        <name>New_Covid_Log</name>
+        <label>New Covid Log</label>
+        <locationX>446</locationX>
+        <locationY>758</locationY>
+        <connector>
+            <targetReference>Notify_User</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>Number_of_Symptoms__c</field>
+            <value>
+                <elementReference>NumberofSymptoms</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Return_Date__c</field>
+            <value>
+                <elementReference>EndDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Symptoms_End_Date__c</field>
+            <value>
+                <elementReference>EndDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Symptoms__c</field>
+            <value>
+                <elementReference>Symptoms</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Sysptoms_Start_Date__c</field>
+            <value>
+                <elementReference>Sysptoms_Start_Date</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>User__c</field>
+            <value>
+                <elementReference>$User.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Covid_19_Log__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <recordLookups>
+        <name>Get_User_Current_Covid_Log</name>
+        <label>Get User Current Covid Log</label>
+        <locationX>248</locationX>
+        <locationY>134</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>User_took_the_survey</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>User__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$User.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>CreatedDate</field>
+            <operator>LessThan</operator>
+            <value>
+                <elementReference>$Flow.CurrentDateTime</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Covid_19_Log__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <screens>
+        <name>Info_Screen</name>
+        <label>Info Screen</label>
+        <locationX>446</locationX>
+        <locationY>350</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>Have_the_user_experience_enough_Symptoms</targetReference>
+        </connector>
+        <fields>
+            <name>Have_you_experienced_any_symptoms_today</name>
+            <dataType>Boolean</dataType>
+            <fieldText>Have you experienced any symptoms today?</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <fields>
+            <name>Sysptoms_Start_Date</name>
+            <dataType>Date</dataType>
+            <fieldText>Sysptoms Start Date</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>false</isRequired>
+        </fields>
+        <fields>
+            <name>Symptoms</name>
+            <choiceReferences>SymptomList</choiceReferences>
+            <dataType>String</dataType>
+            <fieldText>Symptoms</fieldText>
+            <fieldType>MultiSelectCheckboxes</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>MessageA</name>
+        <label>MessageA</label>
+        <locationX>314</locationX>
+        <locationY>566</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>New_Covid_Log</targetReference>
+        </connector>
+        <fields>
+            <name>Msg</name>
+            <fieldText>&lt;p&gt;{!$User.FirstName}{!$User.LastName}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;{!$Organization.Name}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>MessageB</name>
+        <label>MessageB</label>
+        <locationX>578</locationX>
+        <locationY>566</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>New_Covid_Log</targetReference>
+        </connector>
+        <fields>
+            <name>Copy_1_of_Msg</name>
+            <fieldText>&lt;p&gt;{!$User.FirstName}{!$User.LastName}&lt;/p&gt;&lt;p&gt;Happy working&lt;/p&gt;&lt;p&gt;{!$Organization.Name}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>Survey_Already_taken</name>
+        <label>Survey Already taken</label>
+        <locationX>50</locationX>
+        <locationY>350</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <fields>
+            <name>TakenMsg</name>
+            <fieldText>&lt;p&gt;Dear {!$User.FirstName} {!$User.LastName}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;You have already taken the Survey&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <start>
+        <locationX>122</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_User_Current_Covid_Log</targetReference>
+        </connector>
+    </start>
+    <status>Draft</status>
+    <textTemplates>
+        <name>EmailBody</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>&lt;p&gt;Dear {!$User.FirstName} {!$User.LastName}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Thank you for taken Survey!&lt;/p&gt;</text>
+    </textTemplates>
+</Flow>
